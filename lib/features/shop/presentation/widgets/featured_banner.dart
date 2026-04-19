@@ -43,7 +43,7 @@ class _FeaturedBannerState extends State<FeaturedBanner> {
                       Image.asset(
                         book['coverUrl'] as String,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
+                        errorBuilder: (_, _, _) => Container(
                           color: primary.withOpacity(0.15),
                         ),
                       ),

@@ -17,7 +17,7 @@ class BookList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       itemCount: books.length,
-      separatorBuilder: (_, __) =>
+      separatorBuilder: (_, _) =>
           Divider(color: Colors.grey.shade200, height: 1),
       itemBuilder: (context, index) {
         final book = books[index];

@@ -37,7 +37,7 @@ class ShopBookCard extends StatelessWidget {
                 width: 110,
                 height: 150,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_, _, _) => Container(
                   width: 110,
                   height: 150,
                   color: Colors.grey.shade200,

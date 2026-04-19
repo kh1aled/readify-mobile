@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:readify_app/shared/widgets/layout.dart';
-// import 'package:readify_app/home.dart';
+import 'package:readify_app/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:readify_app/shared/services/preferences_service.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // needed for SharedPreferences
+  final showOnboarding = !(await PreferencesService.isOnboardingComplete());
+
+  runApp(MyApp(showOnboarding: showOnboarding));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool showOnboarding;
+  const MyApp({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +34,7 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(fontFamily: 'Newsreader'),
         ),
       ),
-      home: const Layout(),
+      home: showOnboarding ? const OnboardingScreen() : const Layout(),
     );
   }
 }

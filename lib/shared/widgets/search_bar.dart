@@ -21,12 +21,23 @@ class SearchBarWidget extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Search your books...',
                 border: InputBorder.none,
-                
               ),
             ),
           ),
+          const SizedBox(width: 4),
+          _Avatar,
+          const SizedBox(width: 4),
         ],
       ),
     );
   }
+
+  Widget get _Avatar => ClipOval(
+    child: Image.asset(
+      'assets/images/avatar_placeholder.png',
+      width: 36,
+      height: 36,
+      fit: BoxFit.cover,
+    ),
+  );
 }

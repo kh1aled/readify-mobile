@@ -18,7 +18,7 @@ class _LayoutState extends State<Layout> {
     HomeScreen(title: 'Readify'),
     LibraryScreen(),
     WishlistScreen(), // TODO: WishlistScreen()
-    ShopScreen(), // TODO: ShopScreen()
+    ShopScreen(),
   ];
 
   @override
