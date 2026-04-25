@@ -12,4 +12,6 @@ class PreferencesService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_onboardingKey, true);
   }
+
+  static Future<Object?> isLoggedIn() async {}
 }

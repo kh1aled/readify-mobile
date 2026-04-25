@@ -406,7 +406,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
   // ── Hero ─────────────────────────────────────────────────────────────────
 
   Widget _buildHeroSection() {
-    return Container(
+    return SizedBox(
       height: 480,
       child: Stack(
         children: [
@@ -906,7 +906,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
 
     final displayText = _descriptionExpanded
         ? description
-        : description.substring(0, 200) + '...';
+        : '${description.substring(0, 200)}...';
 
     return _section(
       child: Column(
@@ -920,7 +920,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
                 ? CrossFadeState.showSecond
                 : CrossFadeState.showFirst,
             firstChild: Text(
-              description.substring(0, 200) + '...',
+              '${description.substring(0, 200)}...',
               style: const TextStyle(
                 color: _textSecondary,
                 fontSize: 14,

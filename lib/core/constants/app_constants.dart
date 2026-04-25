@@ -12,4 +12,6 @@ class AppConstants {
   static const double bottomNavHeight = 68.0;
   static const double searchBarHeight = 44.0;
   static const double buyButtonHeight = 52.0;
+
+  static const String apiBaseUrl = 'https://api.readify.com';
 }
