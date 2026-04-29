@@ -6,6 +6,7 @@ import 'package:readify_app/features/wishlist/presentation/screens/wishlist_scre
 
 class Layout extends StatefulWidget {
   const Layout({super.key});
+  static String routeName = '/layout';
 
   @override
   State<Layout> createState() => _LayoutState();

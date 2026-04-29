@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class ProfilePic extends StatelessWidget {
-  final VoidCallback onEdit;
+  final String? imageUrl;
+  final VoidCallback? onEdit; // nullable → disables tap while uploading
 
-  const ProfilePic({super.key, required this.onEdit});
+  const ProfilePic({super.key, this.imageUrl, required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,6 @@ class ProfilePic extends StatelessWidget {
           fit: StackFit.expand,
           clipBehavior: Clip.none,
           children: [
-            // Profile Image with Shadow
             Container(
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
@@ -29,19 +29,19 @@ class ProfilePic extends StatelessWidget {
                   )
                 ],
               ),
-              child: const CircleAvatar(
-                backgroundColor: Color(0xFFF5F6F9),
-                backgroundImage: NetworkImage(
-                  "https://i.postimg.cc/0jqKB6mS/Profile-Image.png",
-                ),
+              child: CircleAvatar(
+                backgroundColor: const Color(0xFFF5F6F9),
+                backgroundImage: imageUrl != null
+                    ? NetworkImage(imageUrl!)
+                    : const NetworkImage(
+                        "https://i.postimg.cc/0jqKB6mS/Profile-Image.png"),
               ),
             ),
-            // Camera Edit Button
             Positioned(
               right: -12,
               bottom: 0,
               child: GestureDetector(
-                onTap: onEdit,
+                onTap: onEdit, // null = disabled automatically
                 child: Container(
                   height: 46,
                   width: 46,
@@ -51,15 +51,11 @@ class ProfilePic extends StatelessWidget {
                     border: Border.all(color: Colors.white, width: 2),
                   ),
                   child: Center(
-                    // Using Center and SvgPicture.string correctly
-                    child: SvgPicture.string(
-                      cameraIcon,
-                      width: 20,
-                    ),
+                    child: SvgPicture.string(cameraIcon, width: 20),
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

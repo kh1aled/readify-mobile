@@ -1,5 +1,6 @@
 // lib/features/onboarding/presentation/screens/onboarding_screen.dart
 import 'package:flutter/material.dart';
+import 'package:readify_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:readify_app/shared/services/preferences_service.dart';
 import 'package:readify_app/shared/widgets/layout.dart';
 import '../../data/onboarding_data.dart';
@@ -31,7 +32,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await PreferencesService.setOnboardingComplete();
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const Layout()),
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
     );
   }
 

@@ -13,5 +13,8 @@ class PreferencesService {
     await prefs.setBool(_onboardingKey, true);
   }
 
-  static Future<Object?> isLoggedIn() async {}
+  static Future<Object?> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
 }

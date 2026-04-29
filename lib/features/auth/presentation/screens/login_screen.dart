@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:readify_app/core/services/service_locator.dart';
+import 'package:readify_app/core/services/token_storage_service.dart';
+import 'package:readify_app/shared/widgets/layout.dart';
+import '../auth_provider.dart';
+import '../widgets/auth_text_field.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  static const routeName = '/login';
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -11,8 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
-
+  final tokenStorageService = sl<TokenStorageService>();
   @override
   void dispose() {
     _emailController.dispose();
@@ -20,237 +28,141 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _togglePasswordVisibility() {
-    setState(() => _obscurePassword = !_obscurePassword);
-  }
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  // ── Build ──────────────────────────────────────────────────────────────────
+    final provider = context.read<AuthProvider>();
+    final success = await provider.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.of(context).pushReplacementNamed(Layout.routeName);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final auth = context.watch<AuthProvider>();
+    final isLoading = auth.status == AuthStatus.loading;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          color: const Color(0xFF2D6A65),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 12),
+                const SizedBox(height: 32),
 
-                // ── Heading ────────────────────────────────────────────────
-                const Text(
-                  'Welcome back',
-                  style: TextStyle(
-                    fontSize: 30,
+                // ── Logo / title ──────────────────────────────────────────
+                Text(
+                  'Readify',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    fontFamily: 'Newsreader',
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF191C1C),
+                    color: theme.colorScheme.primary,
                   ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Continue your literary journey',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF888888)),
+                const SizedBox(height: 8),
+                Text(
+                  'Welcome back',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 48),
 
-                // ── Social Buttons ─────────────────────────────────────────
-                Row(
-                  children: [
-                    _SocialLoginButton(
-                      label: 'Google',
-                      icon: _GoogleIcon(),
-                      onPressed: () {
-                        // TODO: Google sign-in
-                      },
-                    ),
-                    const SizedBox(width: 12),
-                    _SocialLoginButton(
-                      label: 'Facebook',
-                      icon: const Icon(
-                        Icons.facebook,
-                        color: Color(0xFF1877F2),
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        // TODO: Facebook sign-in
-                      },
-                    ),
-                  ],
-                ),
+                // ── Error banner ──────────────────────────────────────────
+                if (auth.errorMessage != null) ...[
+                  _ErrorBanner(
+                    message: auth.errorMessage!,
+                    onDismiss: () => context.read<AuthProvider>().clearError(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
-                const SizedBox(height: 24),
-
-                // ── Divider ────────────────────────────────────────────────
-                Row(
-                  children: const [
-                    Expanded(child: Divider(color: Color(0xFFDDDDDD))),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        'OR WITH EMAIL',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFAAAAAA),
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ),
-                    Expanded(child: Divider(color: Color(0xFFDDDDDD))),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // ── Email Field ────────────────────────────────────────────
-                _buildLabel('EMAIL ADDRESS'),
-                const SizedBox(height: 6),
-                TextFormField(
+                // ── Fields ────────────────────────────────────────────────
+                AuthTextField(
+                  label: 'Email',
+                  hint: 'you@example.com',
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: _inputDecoration(hint: 'name@example.com'),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Email is required';
-                    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                    if (!emailRegex.hasMatch(v)) return 'Enter a valid email';
-                    return null;
-                  },
+                  validator: _validateEmail,
                 ),
-
                 const SizedBox(height: 16),
-
-                // ── Password Field ─────────────────────────────────────────
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildLabel('PASSWORD'),
-                    TextButton(
-                      onPressed: () {
-                        // TODO: navigate to forgot password
-                      },
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        'FORGOT?',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF2D6A65),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                TextFormField(
+                AuthTextField(
+                  label: 'Password',
                   controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: _inputDecoration(
-                    hint: '••••••••',
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: const Color(0xFF888888),
-                        size: 20,
-                      ),
-                      onPressed: _togglePasswordVisibility,
-                    ),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Password is required';
-                    if (v.length < 6) return 'Minimum 6 characters';
-                    return null;
-                  },
+                  isPassword: true,
+                  textInputAction: TextInputAction.done,
+                  onEditingComplete: _submit,
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Password is required' : null,
                 ),
+                const SizedBox(height: 8),
 
-                const SizedBox(height: 28),
-
-                // ── Sign In Button ─────────────────────────────────────────
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
+                // ── Forgot password ───────────────────────────────────────
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
                     onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // TODO: sign in
-                      }
+                      final token = sl<TokenStorageService>().getToken();
+                      debugPrint("CURRENT TOKEN: $token");
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2D6A65),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Sign In',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
+                    child: const Text('Forgot password?'),
                   ),
                 ),
-
                 const SizedBox(height: 24),
 
-                // ── Register Link ──────────────────────────────────────────
+                // ── Submit ────────────────────────────────────────────────
+                FilledButton(
+                  onPressed: isLoading ? null : _submit,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Sign in', style: TextStyle(fontSize: 16)),
+                ),
+                const SizedBox(height: 32),
+
+                // ── Register link ─────────────────────────────────────────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "New to Readify? ",
-                      style: TextStyle(fontSize: 13, color: Color(0xFF888888)),
+                    Text(
+                      "Don't have an account? ",
+                      style: theme.textTheme.bodyMedium,
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        // TODO: navigate to register
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(
+                          context,
+                        ).pushNamed(RegisterScreen.routeName);
                       },
-                      child: const Text(
-                        'Create an account',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF2D6A65),
-                          decoration: TextDecoration.underline,
-                          decorationColor: Color(0xFF2D6A65),
-                        ),
-                      ),
+                      child: const Text('Sign up'),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 40),
-
-                // ── Footer ─────────────────────────────────────────────────
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _FooterLink(label: 'PRIVACY POLICY', onTap: () {}),
-                    const SizedBox(width: 24),
-                    _FooterLink(label: 'TERMS OF SERVICE', onTap: () {}),
-                  ],
-                ),
-                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -259,144 +171,51 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-
-  Widget _buildLabel(String text) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF888888),
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration({required String hint, Widget? suffixIcon}) {
-    return InputDecoration(
-      hintText: hint,
-      suffixIcon: suffixIcon,
-      hintStyle: const TextStyle(color: Color(0xFFBBBBBB), fontSize: 14),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFF2D6A65), width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Colors.redAccent),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
-      ),
-    );
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) return 'Email is required';
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+    if (!emailRegex.hasMatch(value)) return 'Enter a valid email';
+    return null;
   }
 }
 
+class _ErrorBanner extends StatelessWidget {
+  final String message;
+  final VoidCallback onDismiss;
 
-class _SocialLoginButton extends StatelessWidget {
-  final String label;
-  final Widget icon;
-  final VoidCallback onPressed;
-
-  const _SocialLoginButton({
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-  });
+  const _ErrorBanner({required this.message, required this.onDismiss});
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: OutlinedButton.icon(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 13),
-          side: const BorderSide(color: Color(0xFFE0E0E0)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: Theme.of(context).colorScheme.onErrorContainer,
           ),
-          backgroundColor: Colors.white,
-        ),
-        icon: icon,
-        label: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF333333),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onErrorContainer,
+              ),
+            ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GoogleIcon extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 20,
-      height: 20,
-      child: CustomPaint(painter: _GooglePainter()),
-    );
-  }
-}
-
-class _GooglePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-
-    paint.color = const Color(0xFF4285F4);
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
-        -1.57, 3.14, true, paint);
-    paint.color = const Color(0xFF34A853);
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
-        1.57, 1.57, true, paint);
-    paint.color = const Color(0xFFFBBC05);
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
-        3.14, 0.785, true, paint);
-    paint.color = const Color(0xFFEA4335);
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
-        3.925, 0.785, true, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _FooterLink extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _FooterLink({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 10,
-          color: Color(0xFFAAAAAA),
-          letterSpacing: 0.5,
-        ),
+          IconButton(
+            icon: Icon(
+              Icons.close,
+              color: Theme.of(context).colorScheme.onErrorContainer,
+            ),
+            onPressed: onDismiss,
+          ),
+        ],
       ),
     );
   }

@@ -4,7 +4,7 @@ import 'package:readify_app/features/wishlist/presentation/widgets/wishlist_grid
 import 'package:readify_app/shared/widgets/search_bar.dart';
 
 class WishlistScreen extends StatefulWidget {
-  const WishlistScreen({super.key});
+  const WishlistScreen({super.key ,});
 
   @override
   State<WishlistScreen> createState() => _WishlistScreenState();
