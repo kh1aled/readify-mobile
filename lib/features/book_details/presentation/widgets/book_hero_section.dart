@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:readify_app/features/book_details/domain/book_details_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
-import 'package:readify_app/features/book_details/domain/entities.dart';
 import 'book_cover_widget.dart';
 
 class BookHeroSection extends StatelessWidget {
-  final BookEntity book;
+  final BookDetailsModel book;
 
   const BookHeroSection({super.key, required this.book});
 
@@ -15,13 +15,20 @@ class BookHeroSection extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 28),
-      child: const Center(child: MainBookCoverWidget()),
+      child: Center(
+        child: BookCoverWidget(
+          book: book,
+          width: AppConstants.coverWidthMain,
+          height: AppConstants.coverHeightMain,
+          borderRadius: 8,
+        ),
+      ),
     );
   }
 }
 
 class BookInfoSection extends StatelessWidget {
-  final BookEntity book;
+  final BookDetailsModel book;
 
   const BookInfoSection({super.key, required this.book});
 
@@ -44,13 +51,13 @@ class BookInfoSection extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            book.author,
+            book.authorName,
             style: AppTextStyles.subtitle,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
-            'Released ${book.publishDate}',
+            'Released ${book.addedDate}',
             style: AppTextStyles.caption,
             textAlign: TextAlign.center,
           ),
@@ -61,7 +68,7 @@ class BookInfoSection extends StatelessWidget {
 }
 
 class BookStatsRow extends StatelessWidget {
-  final BookEntity book;
+  final BookDetailsModel book;
 
   const BookStatsRow({super.key, required this.book});
 
@@ -73,7 +80,7 @@ class BookStatsRow extends StatelessWidget {
         vertical: 14,
       ),
       child: Row(
-         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _StatItem(
             topWidget: Row(
@@ -83,11 +90,11 @@ class BookStatsRow extends StatelessWidget {
                 const Icon(Icons.star_rounded, color: AppColors.star, size: 18),
               ],
             ),
-            label: '${book.formattedReviewCount} reviews',
+            label: '10 reviews',
           ),
           _VerticalSeparator(),
           _StatItem(
-            topWidget: Text('${book.pages}', style: AppTextStyles.statValue),
+            topWidget: Text('${book.PagesCount}', style: AppTextStyles.statValue),
             label: 'Pages',
           ),
           _VerticalSeparator(),

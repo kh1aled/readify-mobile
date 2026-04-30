@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
-import 'package:readify_app/features/book_details/domain/entities.dart';
+import 'package:readify_app/features/book_details/domain/book_details_model.dart';
 
 class BookActionSection extends StatefulWidget {
-  final BookEntity book;
+  final BookDetailsModel book;
 
   const BookActionSection({super.key, required this.book});
 
@@ -56,11 +56,11 @@ class _BookActionSectionState extends State<BookActionSection> {
           ),
           const SizedBox(height: 6),
           // ── List Price ────────────────────────────────────────────
-          if (widget.book.originalPrice != null)
+          if (widget.book.price != null)
             Align(
               alignment: Alignment.centerRight,
               child: Text(
-                'list price: ${widget.book.originalPrice}\$',
+                'list price: ${widget.book.price.toStringAsFixed(0)}\$',
                 style: AppTextStyles.priceStrike,
               ),
             ),

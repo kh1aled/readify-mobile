@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
-import 'package:readify_app/features/book_details/domain/entities.dart';
+import 'package:readify_app/features/book_details/domain/book_details_model.dart';
 
 class BookPublisherSection extends StatelessWidget {
-  final BookEntity book;
+  final BookDetailsModel book;
 
   const BookPublisherSection({super.key, required this.book});
 
@@ -19,12 +19,11 @@ class BookPublisherSection extends StatelessWidget {
         children: [
           Text('Publisher Information', style: AppTextStyles.titleMedium),
           const SizedBox(height: 12),
-          _InfoRow('Publisher', book.publisher ?? '-'),
-          _InfoRow('Release Date', book.publishDate),
-          _InfoRow('Pages', '${book.pages}'),
-          _InfoRow('Language', book.language ?? 'English'),
-          _InfoRow('ISBN', book.isbn ?? '-'),
-          _InfoRow('Genre', book.genre),
+          _InfoRow('Publisher', book.publisherName ?? '-'),
+          _InfoRow('Release Date', book.addedDate),
+          _InfoRow('Pages', '120'),
+          _InfoRow('Language', 'English'),
+          _InfoRow('Genre', book.genreName),
         ],
       ),
     );

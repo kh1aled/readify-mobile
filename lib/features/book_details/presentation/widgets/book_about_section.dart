@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:readify_app/features/book_details/domain/entities.dart';
+import 'package:readify_app/features/book_details/domain/book_details_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
 
 class BookAboutSection extends StatefulWidget {
-  final BookEntity book;
+  final BookDetailsModel book;
 
   const BookAboutSection({super.key, required this.book});
 

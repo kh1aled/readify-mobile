@@ -258,7 +258,22 @@ final List<Book> recentlyReduced = [
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 class BookDetailsScreen extends StatefulWidget {
-  const BookDetailsScreen({super.key});
+  final String? bookId;
+  final String? title;
+  final String? author;
+  final String? price;
+  final String? coverUrl;
+  final double? rating;
+
+  const BookDetailsScreen({
+    super.key,
+    this.bookId,
+    this.title,
+    this.author,
+    this.price,
+    this.coverUrl,
+    this.rating,
+  });
 
   @override
   State<BookDetailsScreen> createState() => _BookDetailsScreenState();
@@ -274,6 +289,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   double _scrollOffset = 0;
+  late Book displayBook;
 
   static const Color _bg = Color(0xFF0F0F1A);
   static const Color _surface = Color(0xFF1A1A2E);
@@ -287,6 +303,9 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
   @override
   void initState() {
     super.initState();
+    // Use passed parameters or fallback to mainBook
+    displayBook = _createBookFromParams();
+
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       setState(() => _scrollOffset = _scrollController.offset);
@@ -304,6 +323,29 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
       curve: Curves.easeOut,
     );
     _fadeController.forward();
+  }
+
+  Book _createBookFromParams() {
+    if (widget.bookId != null &&
+        widget.title != null &&
+        widget.author != null &&
+        widget.price != null) {
+      return Book(
+        id: widget.bookId!,
+        title: widget.title!,
+        author: widget.author!,
+        coverColor: '1A1A2E',
+        accentColor: 'E8A838',
+        rating: 4.7,
+        reviewCount: 12843,
+        pages: 304,
+        publishDate: 'September 29, 2020',
+        genre: 'Literary Fiction',
+        price: double.parse(widget.price!.replaceAll('\$', '')),
+      );
+    }
+    // Fallback to mainBook if no parameters provided
+    return mainBook;
   }
 
   @override
@@ -333,7 +375,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
             SliverToBoxAdapter(
               child: _buildHorizontalSection(
                 icon: '📚',
-                title: 'More by Matt Haig',
+                title: 'More by ${displayBook.author}',
                 books: moreByAuthor,
               ),
             ),
@@ -380,7 +422,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
             color: _textPrimary,
           ),
         ),
-        onPressed: () {},
+        onPressed: () => Navigator.pop(context),
       ),
       actions: [
         IconButton(
@@ -410,7 +452,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
       height: 480,
       child: Stack(
         children: [
-          // Background glow
           Positioned(
             top: 60,
             left: 0,
@@ -428,15 +469,12 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
               ),
             ),
           ),
-          // Content
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 100, 24, 0),
             child: Column(
               children: [
-                // Book Cover
-                _buildBookCover(mainBook, size: 'large'),
+                _buildBookCover(displayBook, size: 'large'),
                 const SizedBox(height: 24),
-                // Genre tag
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -448,7 +486,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
                     border: Border.all(color: _accent.withOpacity(0.3)),
                   ),
                   child: Text(
-                    mainBook.genre.toUpperCase(),
+                    displayBook.genre.toUpperCase(),
                     style: const TextStyle(
                       color: _accent,
                       fontSize: 10,
@@ -459,9 +497,8 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
                   ),
                 ),
                 const SizedBox(height: 12),
-                // Title
                 Text(
-                  mainBook.title,
+                  displayBook.title,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: _textPrimary,
@@ -472,7 +509,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
                   ),
                 ),
                 const SizedBox(height: 8),
-                // Author
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -485,7 +521,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
                       ),
                     ),
                     Text(
-                      mainBook.author,
+                      displayBook.author,
                       style: const TextStyle(
                         color: _accent,
                         fontSize: 15,
@@ -495,7 +531,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
                   ],
                 ),
                 const SizedBox(height: 14),
-                // Rating row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -509,7 +544,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      mainBook.rating.toString(),
+                      displayBook.rating.toString(),
                       style: const TextStyle(
                         color: _textPrimary,
                         fontSize: 15,
@@ -518,7 +553,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '(${_formatCount(mainBook.reviewCount)} reviews)',
+                      '(${_formatCount(displayBook.reviewCount)} reviews)',
                       style: const TextStyle(
                         color: _textSecondary,
                         fontSize: 13,
@@ -566,7 +601,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
       ),
       child: Stack(
         children: [
-          // Spine line
           Positioned(
             left: 0,
             top: 0,
@@ -582,7 +616,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
               ),
             ),
           ),
-          // Inner design
           Positioned.fill(
             left: 6,
             child: Padding(
@@ -662,11 +695,15 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
       ),
       child: Row(
         children: [
-          _statItem(Icons.menu_book_outlined, '${mainBook.pages}', 'Pages'),
+          _statItem(Icons.menu_book_outlined, '${displayBook.pages}', 'Pages'),
           _verticalDivider(),
           _statItem(Icons.calendar_today_outlined, '2020', 'Published'),
           _verticalDivider(),
-          _statItem(Icons.star_outline_rounded, '${mainBook.rating}', 'Rating'),
+          _statItem(
+            Icons.star_outline_rounded,
+            '${displayBook.rating}',
+            'Rating',
+          ),
           _verticalDivider(),
           _statItem(Icons.language_outlined, 'English', 'Language'),
         ],
@@ -707,10 +744,8 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Column(
         children: [
-          // Primary actions
           Row(
             children: [
-              // Wishlist
               GestureDetector(
                 onTap: () {
                   setState(() => _isWishlisted = !_isWishlisted);
@@ -745,7 +780,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
                 ),
               ),
               const SizedBox(width: 10),
-              // Add to Library
               Expanded(
                 child: GestureDetector(
                   onTap: () => setState(() => _isInLibrary = !_isInLibrary),
@@ -786,7 +820,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
             ],
           ),
           const SizedBox(height: 10),
-          // Read / Buy row
           Row(
             children: [
               Expanded(
@@ -801,7 +834,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
               Expanded(
                 child: _primaryButton(
                   icon: Icons.shopping_cart_outlined,
-                  label: '\$${mainBook.price}',
+                  label: '\$${displayBook.price}',
                   filled: false,
                   onTap: () {},
                 ),
@@ -809,7 +842,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
             ],
           ),
           const SizedBox(height: 10),
-          // Write Review
           GestureDetector(
             onTap: () => _showWriteReviewSheet(),
             child: Container(
@@ -904,10 +936,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
     const description =
         'Somewhere out beyond the edge of the universe there is a library that contains an infinite number of books, each one the story of another reality. One tells the story of your life as it is, along with another book for the other life you could have lived if you had made a different choice at any point in your life. While we all wonder how our lives might have been, what if you had the chance to go to the library and see for yourself?\n\nBetween life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived. To see how things would be if you had made other choices. Would you have done anything different, if you had the chance to undo your regrets?';
 
-    final displayText = _descriptionExpanded
-        ? description
-        : '${description.substring(0, 200)}...';
-
     return _section(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -964,11 +992,11 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
           _sectionTitle('Publisher Information'),
           const SizedBox(height: 12),
           _infoRow('Publisher', 'Viking / Penguin Books'),
-          _infoRow('Publication Date', mainBook.publishDate),
-          _infoRow('Pages', '${mainBook.pages}'),
+          _infoRow('Publication Date', displayBook.publishDate),
+          _infoRow('Pages', '${displayBook.pages}'),
           _infoRow('Language', 'English'),
           _infoRow('ISBN-13', '978-0525559474'),
-          _infoRow('Genre', mainBook.genre),
+          _infoRow('Genre', displayBook.genre),
         ],
       ),
     );
@@ -1022,10 +1050,8 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
             ],
           ),
           const SizedBox(height: 4),
-          // Overall rating bar
           _buildRatingOverview(),
           const SizedBox(height: 16),
-          // Review cards
           ...reviews.map((r) => _buildReviewCard(r)),
         ],
       ),
@@ -1045,7 +1071,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
           Column(
             children: [
               Text(
-                mainBook.rating.toString(),
+                displayBook.rating.toString(),
                 style: const TextStyle(
                   color: _textPrimary,
                   fontSize: 40,
@@ -1065,7 +1091,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
               ),
               const SizedBox(height: 4),
               Text(
-                _formatCount(mainBook.reviewCount),
+                _formatCount(displayBook.reviewCount),
                 style: const TextStyle(color: _textSecondary, fontSize: 11),
               ),
             ],
@@ -1458,7 +1484,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen>
                 style: TextStyle(color: _textSecondary, fontSize: 11),
               ),
               Text(
-                '\$${mainBook.price}',
+                '\$${displayBook.price}',
                 style: const TextStyle(
                   color: _accent,
                   fontSize: 22,

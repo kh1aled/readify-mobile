@@ -4,11 +4,13 @@ import 'package:readify_app/features/home/presentation/widgets/book_card.dart';
 class HorizontalBookList extends StatelessWidget {
   final List<Map<String, dynamic>> books;
   final double height;
+  final void Function(int bookId) onBookTap;
 
   const HorizontalBookList({
     super.key,
     required this.books,
     this.height = 290,
+    required this.onBookTap,
   });
 
   @override
@@ -20,8 +22,11 @@ class HorizontalBookList extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.library_books_outlined,
-                  size: 40, color: Colors.grey[300]),
+              Icon(
+                Icons.library_books_outlined,
+                size: 40,
+                color: Colors.grey[300],
+              ),
               const SizedBox(height: 8),
               Text(
                 'No books available',
@@ -44,11 +49,11 @@ class HorizontalBookList extends StatelessWidget {
           return BookCard(
             title: book['title'] ?? 'Untitled',
             author: book['author'] ?? 'Unknown Author',
-            coverUrl: book['coverUrl'] ??
-                'assets/images/default_book_cover.png',
+            coverUrl:
+                book['coverUrl'] ?? 'assets/images/default_book_cover.png',
             price: book['price'] ?? 'N/A',
             onTap: () {
-              // TODO: navigate to book detail
+               onBookTap(book['id'] ?? 0);
             },
           );
         },

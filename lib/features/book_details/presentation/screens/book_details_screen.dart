@@ -1,85 +1,106 @@
 import 'package:flutter/material.dart';
-import 'package:readify_app/features/book_details/presentation/widgets/book_top_bar.dart';
-// import 'package:readify_app/shared/widgets/search_bar.dart';
-// import '../../../../core/theme/app_colors.dart';
-import '../../data/book_repository.dart';
+import '../../data/book_remote_data_source.dart';
+import '../../domain/book_details_model.dart';
+import '../widgets/book_top_bar.dart';
 import '../widgets/book_hero_section.dart';
 import '../widgets/book_action_section.dart';
 import '../widgets/book_about_section.dart';
 import '../widgets/book_publisher_section.dart';
-// import '../widgets/book_shelf_section.dart';
-// import '../widgets/recently_reduced_section.dart';
-import '../widgets/book_reviews_section.dart';
-// import '../widgets/book_bottom_nav.dart';
+// import '../widgets/book_reviews_section.dart';
 
-class BookDetailsScreen extends StatelessWidget {
-  const BookDetailsScreen({super.key});
+class BookDetailsScreen extends StatefulWidget {
+  const BookDetailsScreen({super.key, required this.bookId});
+
+  final int bookId;
+  static String routeName = '/book_details';
+
+  @override
+  State<BookDetailsScreen> createState() => _BookDetailsScreenState();
+}
+
+class _BookDetailsScreenState extends State<BookDetailsScreen> {
+  late final Future<BookDetailsModel> _bookFuture;
+  final _dataSource = BookRemoteDataSource();
+
+  @override
+  void initState() {
+    super.initState();
+    _bookFuture = _dataSource.fetchBookDetails(widget.bookId);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final repo = BookRepository.instance;
-    final book = repo.mainBook;
-
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            // ── Scrollable Body ──────────────────────────────────────
-            Expanded(
-              child: SingleChildScrollView(
+        child: FutureBuilder<BookDetailsModel>(
+          future: _bookFuture,
+          builder: (context, snapshot) {
+            // ── Loading ──────────────────────────────────────────────
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            // ── Error ────────────────────────────────────────────────
+            if (snapshot.hasError) {
+              return Center(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    //Book Top Bar
-                    BookTopBar(),
-                    // Cover
-                    BookHeroSection(book: book),
-                    // Title / Author / Date
-                    BookInfoSection(book: book),
-                    _divider(),
-                    // Rating | Pages | EBook
-                    BookStatsRow(book: book),
-                    _divider(),
-                    // Buy + Wishlist + Library + Read + Write Review
-                    BookActionSection(book: book),
-                    _divider(),
-                    // About this eBook
-                    BookAboutSection(book: book),
-                    _divider(),
-                    // 📚 More by Author
-                    // BookShelfSection(
-                    //   title: '📚 More by ${book.author}',
-                    //   books: repo.moreByAuthor,
-                    // ),
-                    // _divider(),
-                    // // 🔁 Similar Books
-                    // BookShelfSection(
-                    //   title: '🔁 Similar Books',
-                    //   books: repo.similarBooks,
-                    // ),
-                    _divider(),
-                    // // ⭐ Featured Books
-                    // BookShelfSection(
-                    //   title: '⭐ Featured Books',
-                    //   books: repo.featuredBooks,
-                    // ),
-                    // _divider(),
-                    // 💸 Recently Reduced
-                    // RecentlyReducedSection(books: repo.recentlyReduced),
-                    _divider(),
-                    // Reviews
-                    BookReviewsSection(book: book, reviews: repo.reviews),
-                    _divider(),
-                    // Publisher Info
-                    BookPublisherSection(book: book),
-                    const SizedBox(height: 20),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      snapshot.error.toString(),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () => setState(() {
+                        _bookFuture = _dataSource.fetchBookDetails(
+                          widget.bookId,
+                        );
+                      }),
+                      child: const Text('Retry'),
+                    ),
                   ],
                 ),
-              ),
-            ),
-          ],
+              );
+            }
+
+            // ── Success ──────────────────────────────────────────────
+            final book = snapshot.data!;
+            return Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        BookTopBar(),
+                        BookHeroSection(book: book),
+                        BookInfoSection(book: book),
+                        _divider(),
+                        BookStatsRow(book: book),
+                        _divider(),
+                        BookActionSection(book: book),
+                        _divider(),
+                        BookAboutSection(book: book),
+                        _divider(),
+                        // BookReviewsSection(book: book),
+                        _divider(),
+                        BookPublisherSection(book: book),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
-      // ── Bottom Nav ─────────────────────────────────────────────────
     );
   }
 
