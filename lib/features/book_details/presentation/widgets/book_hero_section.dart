@@ -90,11 +90,14 @@ class BookStatsRow extends StatelessWidget {
                 const Icon(Icons.star_rounded, color: AppColors.star, size: 18),
               ],
             ),
-            label: '10 reviews',
+            label: '${book.reviews.length} reviews',
           ),
           _VerticalSeparator(),
           _StatItem(
-            topWidget: Text('${book.PagesCount}', style: AppTextStyles.statValue),
+            topWidget: Text(
+              '${book.pagesCount}',
+              style: AppTextStyles.statValue,
+            ),
             label: 'Pages',
           ),
           _VerticalSeparator(),

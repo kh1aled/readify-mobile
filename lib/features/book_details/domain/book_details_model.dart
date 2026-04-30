@@ -1,3 +1,5 @@
+import 'package:readify_app/features/book_details/domain/review_model.dart';
+
 class BookDetailsModel {
   final int id;
   final String title;
@@ -11,7 +13,8 @@ class BookDetailsModel {
   final String coverUrl;
   final String fileUrl;
   final double rating;
-  final int PagesCount;
+  final int pagesCount;
+  final List<ReviewModel> reviews;
 
   BookDetailsModel({
     required this.id,
@@ -26,24 +29,34 @@ class BookDetailsModel {
     required this.coverUrl,
     required this.fileUrl,
     required this.rating,
-    required this.PagesCount,
+    required this.pagesCount,
+    required this.reviews,
   });
 
   factory BookDetailsModel.fromJson(Map<String, dynamic> json) {
     return BookDetailsModel(
-      id: json['id'] as int,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      price: (json['price'] as num).toDouble(),
-      addedDate: json['addedDate'] as String,
-      updatedDate: json['updatedDate'] as String?,
-      authorName: json['authorName'] as String,
-      genreName: json['genreName'] as String,
-      publisherName: json['publisherName'] as String,
-      coverUrl: json['coverUrl'] as String,
-      fileUrl: json['fileUrl'] as String,
-      rating: (json['rating'] as num).toDouble(),
-      PagesCount: json['pagesCount'] as int,
+      id: json['id'] ?? 0,
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      price: (json['price'] ?? 0).toDouble(),
+      addedDate: json['addedDate'] ?? '',
+      updatedDate: json['updatedDate'],
+
+      authorName: json['authorName'] ?? '',
+      genreName: json['genreName'] ?? '',
+      publisherName: json['publisherName'] ?? '',
+
+      coverUrl: json['coverUrl'] ?? '',
+      fileUrl: json['fileUrl'] ?? '',
+
+      rating: (json['rating'] ?? 0).toDouble(),
+      pagesCount: json['pagesCount'] ?? 0,
+
+      reviews:
+          (json['reviews'] as List?)
+              ?.map((e) => ReviewModel.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 
@@ -61,7 +74,8 @@ class BookDetailsModel {
       'coverUrl': coverUrl,
       'fileUrl': fileUrl,
       'rating': rating,
-      'pagesCount': PagesCount,
+      'pagesCount': pagesCount,
+      'reviews': reviews.map((e) => e.toJson()).toList(),
     };
   }
 }

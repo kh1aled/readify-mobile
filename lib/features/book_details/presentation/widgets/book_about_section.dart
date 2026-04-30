@@ -29,8 +29,7 @@ class _BookAboutSectionState extends State<BookAboutSection> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('About this eBook',
-                    style: AppTextStyles.titleMedium),
+                Text('About this eBook', style: AppTextStyles.titleMedium),
                 Icon(
                   _expanded
                       ? Icons.keyboard_arrow_up_rounded
@@ -51,7 +50,7 @@ class _BookAboutSectionState extends State<BookAboutSection> {
               children: [
                 const SizedBox(height: 12),
                 Text(
-                  widget.book.description ?? '',
+                  widget.book.description,
                   style: AppTextStyles.bodyMedium,
                 ),
               ],

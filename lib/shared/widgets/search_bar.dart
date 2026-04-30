@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:readify_app/core/constants/app_constants.dart';
 import 'package:readify_app/core/services/service_locator.dart';
 import 'package:readify_app/core/services/token_storage_service.dart';
-import 'package:readify_app/features/profile/presentation/screens/profile_screen.dart';
 
 class SearchBarWidget extends StatelessWidget {
   const SearchBarWidget({super.key});

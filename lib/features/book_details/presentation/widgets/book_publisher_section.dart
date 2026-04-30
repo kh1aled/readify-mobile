@@ -19,9 +19,9 @@ class BookPublisherSection extends StatelessWidget {
         children: [
           Text('Publisher Information', style: AppTextStyles.titleMedium),
           const SizedBox(height: 12),
-          _InfoRow('Publisher', book.publisherName ?? '-'),
+          _InfoRow('Publisher', book.publisherName),
           _InfoRow('Release Date', book.addedDate),
-          _InfoRow('Pages', '120'),
+          _InfoRow('Pages', '${book.pagesCount}'),
           _InfoRow('Language', 'English'),
           _InfoRow('Genre', book.genreName),
         ],

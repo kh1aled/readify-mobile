@@ -1,21 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:readify_app/features/book_details/domain/book_details_model.dart';
+import 'package:readify_app/features/book_details/domain/review_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
-import 'package:readify_app/features/book_details/domain/entities.dart';
+
+Map<int, int> getRatingCounts(List<ReviewModel> reviews) {
+  Map<int, int> counts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+
+  for (var review in reviews) {
+    counts[review.rating] = counts[review.rating]! + 1;
+  }
+
+  return counts;
+}
+
+double getFraction(int star, Map<int, int> counts, int total) {
+  if (total == 0) return 0;
+  return counts[star]! / total;
+}
 
 class BookReviewsSection extends StatelessWidget {
-  final BookEntity book;
-  final List<ReviewEntity> reviews;
+  final BookDetailsModel book;
+  final List<ReviewModel> reviews;
+  final VoidCallback onWriteReview;
+
 
   const BookReviewsSection({
     super.key,
     required this.book,
     required this.reviews,
+    required this.onWriteReview,
   });
 
   @override
   Widget build(BuildContext context) {
+    bool submitting = false;
+
     return Container(
       color: AppColors.white,
       padding: const EdgeInsets.all(AppConstants.pagePadding),
@@ -28,28 +49,32 @@ class BookReviewsSection extends StatelessWidget {
               Text('Reviews', style: AppTextStyles.titleMedium),
               GestureDetector(
                 onTap: () {},
-                child:
-                    const Text('See all', style: AppTextStyles.seeAll),
+                child: const Text('See all', style: AppTextStyles.seeAll),
               ),
             ],
           ),
           const SizedBox(height: 14),
           _RatingOverviewWidget(book: book),
           const SizedBox(height: 20),
-          ...reviews.map((r) => _ReviewCard(review: r)),
+          ...reviews.map((r) => _ReviewCard(review: r)).toList(),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.rate_review_outlined,
-                size: 15, color: AppColors.teal),
-            label: const Text('Write a Review',
-                style: TextStyle(color: AppColors.teal, fontSize: 13)),
+            onPressed: onWriteReview,
+            icon: const Icon(
+              Icons.rate_review_outlined,
+              size: 15,
+              color: AppColors.teal,
+            ),
+            label: const Text(
+              'Write a Review',
+              style: TextStyle(color: AppColors.teal, fontSize: 13),
+            ),
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: AppColors.teal),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 20, vertical: 10),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
           ),
         ],
@@ -59,11 +84,14 @@ class BookReviewsSection extends StatelessWidget {
 }
 
 class _RatingOverviewWidget extends StatelessWidget {
-  final BookEntity book;
+  final BookDetailsModel book;
   const _RatingOverviewWidget({required this.book});
 
   @override
   Widget build(BuildContext context) {
+    final counts = getRatingCounts(book.reviews);
+    final total = book.reviews.length;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -71,7 +99,7 @@ class _RatingOverviewWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              book.rating.toString(),
+              book.rating.toStringAsFixed(1),
               style: const TextStyle(
                 color: AppColors.textDark,
                 fontSize: 36,
@@ -85,35 +113,30 @@ class _RatingOverviewWidget extends StatelessWidget {
                   i < book.rating.floor()
                       ? Icons.star_rounded
                       : (i < book.rating
-                          ? Icons.star_half_rounded
-                          : Icons.star_outline_rounded),
+                            ? Icons.star_half_rounded
+                            : Icons.star_outline_rounded),
                   color: AppColors.star,
                   size: 15,
                 ),
               ),
             ),
             const SizedBox(height: 4),
-            Text('${book.formattedReviewCount} ratings',
-                style: AppTextStyles.statLabel),
+            Text('$total ratings', style: AppTextStyles.statLabel),
           ],
         ),
         const SizedBox(width: 20),
         Expanded(
           child: Column(
-            children: [5, 4, 3, 2, 1]
-                .map((s) => _RatingBar(
-                      stars: s,
-                      fraction: s == 5
-                          ? 0.70
-                          : s == 4
-                              ? 0.18
-                              : s == 3
-                                  ? 0.08
-                                  : s == 2
-                                      ? 0.03
-                                      : 0.01,
-                    ))
-                .toList(),
+            children: [5, 4, 3, 2, 1].map((s) {
+              final fraction = getFraction(s, counts, total);
+              final count = counts[s]!; // add this
+
+              return _RatingBar(
+                stars: s,
+                fraction: fraction,
+                count: count,
+              ); // pass count
+            }).toList(),
           ),
         ),
       ],
@@ -124,7 +147,13 @@ class _RatingOverviewWidget extends StatelessWidget {
 class _RatingBar extends StatelessWidget {
   final int stars;
   final double fraction;
-  const _RatingBar({required this.stars, required this.fraction});
+  final int count; // add this
+
+  const _RatingBar({
+    required this.stars,
+    required this.fraction,
+    required this.count, // add this
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -134,8 +163,7 @@ class _RatingBar extends StatelessWidget {
         children: [
           SizedBox(
             width: 16,
-            child: Text('$stars',
-                style: AppTextStyles.statLabel),
+            child: Text('$stars', style: AppTextStyles.statLabel),
           ),
           const SizedBox(width: 6),
           Expanded(
@@ -144,10 +172,18 @@ class _RatingBar extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: fraction,
                 backgroundColor: AppColors.border,
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.star),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.star),
                 minHeight: 7,
               ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: 20,
+            child: Text(
+              '$count',
+              style: AppTextStyles.statLabel,
+              textAlign: TextAlign.right,
             ),
           ),
         ],
@@ -157,7 +193,7 @@ class _RatingBar extends StatelessWidget {
 }
 
 class _ReviewCard extends StatelessWidget {
-  final ReviewEntity review;
+  final ReviewModel review;
   const _ReviewCard({required this.review});
 
   @override
@@ -171,32 +207,28 @@ class _ReviewCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor: review.avatarColor.withOpacity(0.15),
-                child: Text(
-                  review.initials,
-                  style: TextStyle(
-                    color: review.avatarColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                backgroundColor: const Color.fromARGB(255, 193, 48, 48),
+                backgroundImage: NetworkImage(review.userImage),
               ),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(review.name, style: AppTextStyles.reviewName),
+                  Text(review.userName, style: AppTextStyles.reviewName),
                   Row(
                     children: List.generate(
-                      review.stars,
-                      (_) => const Icon(Icons.star_rounded,
-                          color: AppColors.star, size: 11),
+                      review.rating,
+                      (_) => const Icon(
+                        Icons.star_rounded,
+                        color: AppColors.star,
+                        size: 11,
+                      ),
                     ),
                   ),
                 ],
               ),
               const Spacer(),
-              Text(review.date, style: AppTextStyles.statLabel),
+              Text(review.createdAt, style: AppTextStyles.statLabel),
             ],
           ),
           const SizedBox(height: 8),

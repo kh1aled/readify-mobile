@@ -42,6 +42,8 @@ class _ReducedBookRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Determine if there's a discount by checking if originalPrice field exists
+    // Since BookDetailsModel doesn't have originalPrice, we show only the current price
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
@@ -65,61 +67,40 @@ class _ReducedBookRow extends StatelessWidget {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    Text('\$${book.price}', style: AppTextStyles.priceSmall),
-                    const SizedBox(width: 6),
-                    // if (book.)
-                    //   Text('\$${book.originalPrice}',
-                    //       style: AppTextStyles.priceStrike),
+                    Text(
+                      '\$${book.price.toStringAsFixed(2)}',
+                      style: AppTextStyles.priceSmall,
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          // Column(
-          //   crossAxisAlignment: CrossAxisAlignment.end,
-          //   children: [
-          //     if (book.hasDiscount)
-          //       Container(
-          //         padding: const EdgeInsets.symmetric(
-          //             horizontal: 8, vertical: 4),
-          //         decoration: BoxDecoration(
-          //           color: AppColors.green.withOpacity(0.1),
-          //           borderRadius: BorderRadius.circular(8),
-          //           border: Border.all(
-          //             color: AppColors.greenLight.withOpacity(0.4),
-          //           ),
-          //         ),
-          //         child: Text(
-          //           '-${book.discountPercent}%',
-          //           style: const TextStyle(
-          //             color: AppColors.greenLight,
-          //             fontSize: 11,
-          //             fontWeight: FontWeight.bold,
-          //           ),
-          //         ),
-          //       ),
-          //     const SizedBox(height: 8),
-          //     GestureDetector(
-          //       onTap: () {},
-          //       child: Container(
-          //         padding: const EdgeInsets.symmetric(
-          //             horizontal: 16, vertical: 7),
-          //         decoration: BoxDecoration(
-          //           color: AppColors.teal,
-          //           borderRadius: BorderRadius.circular(20),
-          //         ),
-          //         child: const Text(
-          //           'Buy',
-          //           style: TextStyle(
-          //             color: AppColors.white,
-          //             fontSize: 12,
-          //             fontWeight: FontWeight.w600,
-          //           ),
-          //         ),
-          //       ),
-          //     ),
-          //   ],
-          // ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () {},
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: AppColors.teal,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Buy',
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

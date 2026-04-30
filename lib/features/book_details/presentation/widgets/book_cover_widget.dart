@@ -16,7 +16,6 @@ class BookCoverWidget extends StatelessWidget {
     this.borderRadius = 6,
   });
 
-
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -26,6 +25,23 @@ class BookCoverWidget extends StatelessWidget {
         width: width,
         height: height,
         fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          width: width,
+          height: height,
+          color: const Color(0xFFE0E0E0),
+          child: const Icon(Icons.book, color: Color(0xFF9E9E9E)),
+        ),
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: width,
+            height: height,
+            color: const Color(0xFFF5F5F5),
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        },
       ),
     );
   }
