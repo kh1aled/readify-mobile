@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:readify_app/features/book_details/presentation/screens/reader_screen.dart';
 import '../../data/book_remote_data_source.dart';
 import '../../domain/book_details_model.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -98,9 +99,8 @@ class _BookActionSectionState extends State<BookActionSection> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => Scaffold(
-            appBar: AppBar(title: Text(widget.book.title)),
-            body: const Center(child: Text("Reader Screen Here")),
+          builder: (_) => PdfReaderScreen(
+            url: widget.book.fileUrl,
           ),
         ),
       );
