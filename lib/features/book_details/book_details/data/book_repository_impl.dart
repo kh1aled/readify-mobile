@@ -1,6 +1,8 @@
-import 'package:readify_app/features/book_details/data/book_remote_data_source.dart';
-import 'package:readify_app/features/book_details/domain/book_details_model.dart';
-import 'package:readify_app/features/book_details/domain/book_repository.dart';
+
+
+import 'package:readify_app/features/book_details/book_details/data/book_remote_data_source.dart';
+import 'package:readify_app/features/book_details/book_details/domain/book_details_model.dart';
+import 'package:readify_app/features/book_details/book_details/domain/book_repository.dart';
 
 class BookRepositoryImpl implements BookRepository {
   BookRepositoryImpl._();

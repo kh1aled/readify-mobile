@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:readify_app/features/book_details/domain/book_details_model.dart';
-import '../../../../core/constants/app_constants.dart';
+import 'package:readify_app/core/constants/app_constants.dart';
+import 'package:readify_app/features/book_details/book_details/domain/book_details_model.dart';
 
 class BookCoverWidget extends StatelessWidget {
   final BookDetailsModel book;

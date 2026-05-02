@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:readify_app/features/book_details/book_details/presentation/screens/book_details_screen.dart';
 import 'package:readify_app/features/wishlist/domain/models/wishlist_item_model.dart';
 import 'package:readify_app/features/wishlist/presentation/widgets/wishlist_book_card.dart';
 
@@ -7,10 +8,12 @@ class WishlistGrid extends StatelessWidget {
     super.key,
     required this.items,
     required this.primaryColor,
+    required this.onRefresh,
   });
 
   final List<WishlistItemModel> items;
   final Color primaryColor;
+  final Future<void> Function() onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +31,18 @@ class WishlistGrid extends StatelessWidget {
       itemBuilder: (context, index) => WishlistBookCard(
         item: items[index],
         primaryColor: primaryColor,
-        onTap: () {
-          // TODO: navigate to book detail
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  BookDetailsScreen(bookId: items[index].bookId),
+            ),
+          );
+
+          if (result == true) {
+            await onRefresh();
+          }
         },
       ),
     );
@@ -45,8 +58,11 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.favorite_border_rounded,
-              size: 64, color: Colors.grey.shade300),
+          Icon(
+            Icons.favorite_border_rounded,
+            size: 64,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 16),
           Text(
             'Your wishlist is empty',

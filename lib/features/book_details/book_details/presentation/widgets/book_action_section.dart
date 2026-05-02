@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:readify_app/features/book_details/presentation/screens/reader_screen.dart';
+import 'package:readify_app/core/constants/app_constants.dart';
+import 'package:readify_app/core/theme/app_colors.dart';
+import 'package:readify_app/core/theme/app_text_styles.dart';
+import 'package:readify_app/features/book_details/book_details/presentation/screens/reader_screen.dart';
 import '../../data/book_remote_data_source.dart';
 import '../../domain/book_details_model.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/constants/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:readify_app/core/services/token_storage_service.dart';
 
@@ -26,6 +26,7 @@ class _BookActionSectionState extends State<BookActionSection> {
   bool _isWishlisted = false;
   bool _isInLibrary = false;
   bool _isLoading = false;
+  bool _isWishlistLoading = false;
 
   final _dataSource = BookRemoteDataSource();
   TokenStorageService? _tokenStorage;
@@ -39,7 +40,62 @@ class _BookActionSectionState extends State<BookActionSection> {
   Future<void> _initToken() async {
     final prefs = await SharedPreferences.getInstance();
     _tokenStorage = TokenStorageService(prefs);
-    await _checkIfPurchased();
+    // Run both checks in parallel
+    await Future.wait([
+      _checkIfPurchased(),
+      _checkIfWishlisted(),
+    ]);
+  }
+
+  // ── Wishlist ────────────────────────────────────────────────────────────────
+
+  Future<void> _checkIfWishlisted() async {
+    try {
+      final token = _tokenStorage?.getToken();
+      if (token == null) return;
+      final result = await _dataSource.isBookWishlisted(widget.book.id, token);
+      if (mounted) setState(() => _isWishlisted = result);
+    } catch (_) {
+      // silent — heart stays empty if check fails
+    }
+  }
+
+  Future<void> _toggleWishlist() async {
+    if (_isWishlistLoading) return;
+
+    final token = _tokenStorage?.getToken();
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to use your wishlist')),
+      );
+      return;
+    }
+
+    setState(() => _isWishlistLoading = true);
+
+    try {
+      final nowWishlisted =
+          await _dataSource.toggleWishlist(widget.book.id, token);
+
+      if (mounted) {
+        setState(() => _isWishlisted = nowWishlisted);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              nowWishlisted ? '❤️ Added to wishlist' : 'Removed from wishlist',
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } on BookException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _isWishlistLoading = false);
+    }
   }
 
   Future<void> _purchaseBook() async {
@@ -210,8 +266,9 @@ class _BookActionSectionState extends State<BookActionSection> {
               _IconActionButton(
                 icon: _isWishlisted ? Icons.favorite : Icons.favorite_border,
                 iconColor: _isWishlisted ? AppColors.red : AppColors.textLight,
-                onTap: () => setState(() => _isWishlisted = !_isWishlisted),
-                tooltip: 'Wishlist',
+                isLoading: _isWishlistLoading,
+                onTap: _toggleWishlist,
+                tooltip: _isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist',
               ),
               const SizedBox(width: 10),
 
@@ -238,6 +295,7 @@ class _BookActionSectionState extends State<BookActionSection> {
 class _IconActionButton extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
+  final bool isLoading;
   final VoidCallback onTap;
   final String tooltip;
 
@@ -246,12 +304,13 @@ class _IconActionButton extends StatelessWidget {
     required this.iconColor,
     required this.onTap,
     required this.tooltip,
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: isLoading ? null : onTap,
       child: Tooltip(
         message: tooltip,
         child: Container(
@@ -261,7 +320,12 @@ class _IconActionButton extends StatelessWidget {
             border: Border.all(color: AppColors.border),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: iconColor),
+          child: isLoading
+              ? const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(icon, color: iconColor),
         ),
       ),
     );

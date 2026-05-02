@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:readify_app/core/constants/app_constants.dart';
-import 'package:readify_app/features/book_details/domain/book_details_model.dart';
+import 'package:readify_app/features/book_details/book_details/domain/book_details_model.dart';
 
 class BookException implements Exception {
   final String message;
@@ -68,6 +68,55 @@ class BookRemoteDataSource {
       rethrow;
     } catch (e) {
       throw BookException('Network error: $e');
+    }
+  }
+
+  /// Calls POST /books/wishlist/{bookId}.
+  /// The backend now works as a toggler:
+  ///   - if not in wishlist → adds it  → returns true
+  ///   - if already in wishlist → removes it → returns false
+  Future<bool> toggleWishlist(int bookId, String token) async {
+    try {
+      final response = await _client.post(
+        Uri.parse('$_baseUrl/books/wishlist/$bookId'),
+        headers: _jsonHeadersWithTokens(token: token),
+      );
+
+      if (response.statusCode == 200) {
+        // Backend returns { "isWishlisted": true/false }
+        final data = jsonDecode(response.body);
+        if (data is Map && data.containsKey('isWishlisted')) {
+          return data['isWishlisted'] as bool;
+        }
+        // Fallback: treat 200 as "added"
+        return true;
+      }
+
+      throw BookException(
+        'Failed to toggle wishlist (status ${response.statusCode})',
+      );
+    } on BookException {
+      rethrow;
+    } catch (e) {
+      throw BookException('Network error: $e');
+    }
+  }
+
+  /// Checks whether this book is already in the user's wishlist.
+  Future<bool> isBookWishlisted(int bookId, String token) async {
+    try {
+      final response = await _client.get(
+        Uri.parse('$_baseUrl/books/wishlist/check/$bookId'),
+        headers: _jsonHeadersWithTokens(token: token),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['isWishlisted'] ?? false;
+      }
+      return false;
+    } catch (_) {
+      return false;
     }
   }
 

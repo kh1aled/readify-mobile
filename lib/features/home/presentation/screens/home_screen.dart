@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:readify_app/features/book_details/book_details/presentation/screens/book_details_screen.dart';
 import 'package:readify_app/features/home/data/home_remote_data_source.dart';
 import 'package:readify_app/features/home/data/home_repository_impl.dart';
 import 'package:readify_app/features/home/domain/featured_books_model.dart';
@@ -9,7 +10,6 @@ import 'package:readify_app/features/home/presentation/widgets/category_list.dar
 import 'package:readify_app/features/home/presentation/widgets/horizontal_book_list.dart';
 import 'package:readify_app/shared/widgets/search_bar.dart';
 import 'package:readify_app/features/home/presentation/widgets/section_header.dart';
-import 'package:readify_app/features/book_details/presentation/screens/book_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String title;

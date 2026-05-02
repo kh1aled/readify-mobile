@@ -15,22 +15,29 @@ class Layout extends StatefulWidget {
 class _LayoutState extends State<Layout> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    HomeScreen(title: 'Readify'),
-    LibraryScreen(),
-    WishlistScreen(), // TODO: WishlistScreen()
-    ShopScreen(),
-  ];
+  final GlobalKey<WishlistScreenState> _wishlistKey =
+      GlobalKey<WishlistScreenState>();
+
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pages = [
+      HomeScreen(title: 'Readify'),
+      LibraryScreen(),
+      WishlistScreen(key: _wishlistKey),
+      ShopScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -45,7 +52,15 @@ class _LayoutState extends State<Layout> {
         child: SafeArea(
           child: BottomNavigationBar(
             currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
+            onTap: (index) {
+              setState(() => _currentIndex = index);
+
+              if (index == 2) {
+                Future.delayed(Duration(milliseconds: 100), () {
+                  _wishlistKey.currentState?.refresh();
+                });
+              }
+            },
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
             selectedItemColor: primary,

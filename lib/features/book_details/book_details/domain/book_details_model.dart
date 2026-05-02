@@ -1,4 +1,5 @@
-import 'package:readify_app/features/book_details/domain/review_model.dart';
+
+import 'package:readify_app/features/book_details/book_details/domain/review_model.dart';
 
 class BookDetailsModel {
   final int id;

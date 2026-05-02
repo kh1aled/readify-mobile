@@ -14,13 +14,12 @@ class BookTopBar extends StatelessWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.arrow_back_ios),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(context, true),
             ),
             IconButton(icon: const Icon(Icons.search), onPressed: () {}),
           ],
         ),
       ),
     );
-
   }
 }
