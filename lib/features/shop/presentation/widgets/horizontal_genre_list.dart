@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:readify_app/features/shop/domain/genre_model.dart';
 
 class HorizontalGenreList extends StatefulWidget {
   const HorizontalGenreList({super.key, required this.genres});
 
-  final List<Map<String, String>> genres;
+  final List<GenreModel> genres;
 
   @override
   State<HorizontalGenreList> createState() => _HorizontalGenreListState();
@@ -55,7 +56,7 @@ class _HorizontalGenreListState extends State<HorizontalGenreList> {
         itemCount: widget.genres.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final name = widget.genres[index]['name']!;
+          final name = widget.genres[index].name;
           final isSelected = index == _selectedIndex;
 
           return GestureDetector(

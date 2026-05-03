@@ -43,9 +43,8 @@ class _FeaturedBannerState extends State<FeaturedBanner> {
                       Image.asset(
                         book['coverUrl'] as String,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Container(
-                          color: primary.withOpacity(0.15),
-                        ),
+                        errorBuilder: (_, _, _) =>
+                            Container(color: primary.withOpacity(0.15)),
                       ),
                       // Gradient overlay
                       Container(
@@ -87,7 +86,9 @@ class _FeaturedBannerState extends State<FeaturedBanner> {
                             const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 5),
+                                horizontal: 12,
+                                vertical: 5,
+                              ),
                               decoration: BoxDecoration(
                                 color: primary,
                                 borderRadius: BorderRadius.circular(20),
